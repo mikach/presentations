@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Modular javascript architecture</title>
+
+		<meta name="description" content="Modular javascript architecture">
+		<meta name="author" content="Michael Kachanovskyi">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Modular JS Architecture</h1>
+				</section>
+
+				<section>
+					<h2>Topics</h2>
+					<ul>
+						<li>AMD</li>
+						<li>CommonJS</li>
+						<li>ES6 Modules</li>
+					</ul>
+				</section>
+
+				<section>
+					<section>
+						<h2>Problems</h2>
+						<ul>
+							<li>Web sites are turning into Web apps</li>
+							<li>Code complexity grows as the site gets bigger</li>
+							<li>Assembly gets harder</li>
+							<li>Developer wants discrete JS files/modules</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Solutions</h2>
+						<ul>
+							<li>XHR &amp; eval</li>
+							<li>Web Workers</li>
+							<li>document.write()</li>
+							<li>head.appendChild(script)</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Module Pattern</h2>
+						<pre><code>
+							(function () {
+							   this.myGlobal = function () {};
+							}());
+						</code></pre>
+					</section>
+				</section>
+
+				<!-- Example of nested vertical slides -->
+				<section>
+					<section>
+						<h2>AMD</h2>
+						<ul>
+							<li class="fragment"  data-fragment-index="1">Register the factory function by calling define(), instead of immediately executing it.</li>
+							<li class="fragment"  data-fragment-index="2">Pass dependencies as an array of string values, do not grab globals.</li>
+							<li class="fragment"  data-fragment-index="3">Only execute the factory function once all the dependencies have been loaded and executed.</li>
+							<li class="fragment"  data-fragment-index="4">Pass the dependent modules as arguments to the factory function.</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Libraries</h2>
+						<ul>
+							<li>RequireJS</li>
+							<li>curl</li>
+							<li>lsjs</li>
+							<li>Dojo 1.7+</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Define</h3>
+						<pre><code>
+							define(
+							    module_id /*optional*/, 
+							    [dependencies] /*optional*/, 
+							    definition function /* function for instantiating
+							                           the module or object */
+							);
+						</code></pre>
+					</section>
+					<section>
+						<pre><code>
+							define('myModule', 
+							    ['foo', 'bar'], 
+							    // module definition function
+							    // dependencies (foo and bar) are mapped to function parameters
+							    function ( foo, bar ) {
+							        // create your module here
+							        var myModule = {
+							            doStuff:function(){
+							                console.log('Yay! Stuff');
+							            }
+							        }
+
+							        return myModule;
+							});
+						</code></pre>
+					</section>
+					<section>
+						<h3>Require</h3>
+						<pre><code>
+							require(['foo', 'bar'], function ( foo, bar ) {
+							        // rest of your code here
+							        foo.doSomething();
+							});
+						</code></pre>
+					</section>
+					<section>
+						<h3>CommonJS Wrapper</h3>
+						<pre><code>
+							define(function() {
+							    var dependency1 = require('dependency1'),
+							        dependency2 = require('dependency2');
+
+							    return function () {};
+							});
+						</code></pre>
+					</section>
+					<section>
+						<h3>Configuration</h3>
+						<pre><code>
+							require.config({
+							    baseUrl: "/path/to/scripts/folder",
+							    paths: {
+							        "jquery": "libs/jquery/v1.8.3"
+							    },
+							    waitSeconds: 15,    
+							});
+						</code></pre>
+					</section>
+					<section>
+						<pre><code>
+							require.config({
+							    shim: {
+							        'backbone': {
+							            deps: ['underscore', 'jquery'],
+							            exports: 'Backbone'
+							        },
+							        'underscore': {
+							            exports: '_'
+							        }
+						        }
+						    });
+						    define(['backbone'], function (Backbone) {
+							  	return Backbone.Model.extend({});
+							});
+						</code></pre>
+					</section>
+					<section>
+						<pre><code>
+							requirejs.config({
+							    paths: {
+							        jquery: [
+							            'http://ajax.googleapis.com/.../jquery/jquery.min',
+							            //If the CDN location fails, load from this location
+							            'lib/jquery'
+							        ]
+							    }
+							});
+							//Later
+							require(['jquery'], function ($) {
+							});
+						</code></pre>
+					</section>
+					<section>
+						<h2>Plugins</h2>
+						<pre><code>
+							define([
+							    'libs/undescore', 
+							    'text!./template.html',
+							    'css!./template.css'
+							], function(_, tpl) {
+							        // some stuff
+							        _.template( tpl, data );
+							    }
+							);
+						</code></pre>
+					</section>
+					<section>
+						<h2>Optimization</h2>
+						<p>Installing r.js tool</p>
+						<pre><code>
+							$ npm install -g requirejs
+						</code></pre>
+						<p>Example of using</p>
+						<pre><code>
+							$ r.js -o baseUrl=. name=main out=build.js
+						</code></pre>
+						<p>Without minify</p>
+						<pre><code>
+							$ r.js -o baseUrl=. name=main out=build.js optimize=none
+						</code></pre>
+					</section>
+					<section>
+						<h2>Using with Backbone</h2>
+						<pre><code>
+							require([
+							    'backbone',
+							    'views/app',
+							    'routers/router'
+							], function (Backbone, AppView, Workspace) {
+							    // Initialize routing and start Backbone.history()
+							    new Workspace();
+							    Backbone.history.start();
+
+							    // Initialize the application view
+							    new AppView();
+							});
+						</code></pre>
+					</section>
+					<section>
+						<pre><code>
+							define([
+							    'jquery',
+							    'underscore',
+							    'backbone',
+							    'collections/todos',
+							    'text!templates/stats.html'
+							], function ($, _, Backbone, Todos, TodoView, statsTemplate) {
+							    'use strict';
+
+							    var AppView = Backbone.View.extend({
+							        // code of view
+							    });
+
+							    return AppView;
+							});
+						</code></pre>
+					</section>
+					<section>
+						<h2>Using with Angular</h2>
+						<p>Main file:</p>
+						<pre><code>
+							require.config({
+							    shim: { angular: { exports: 'angular' } }
+							});
+							require([
+							    'angular', 
+							    'app', 
+							    'controllers/todo', 
+							    'directives/todoFocus'
+							], function (angular) {
+							    angular.bootstrap(document, ['todomvc']);
+							});
+						</code></pre>
+						<p>app.js</p>
+						<pre><code>
+							define(['angular'], function (angular) {
+							    return angular.module('yourmodule', []);
+							});
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<h1>QUESTIONS?</h1>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
