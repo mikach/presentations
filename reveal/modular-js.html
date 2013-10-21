@@ -284,6 +284,46 @@
 				</section>
 
 				<section>
+					<section>
+						<h2>CommonJS</h2>
+						<ul>
+							<li class="fragment"  data-fragment-index="1">Specifying an ecosystem for JavaScript outside the browser.</li>
+							<li class="fragment"  data-fragment-index="2">Works synchronously.</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Understanding CJS: require() and exports</h3>
+						<pre><code>
+						    // package/lib is a dependency we require
+						    var lib = require('package/lib');
+						     
+						    // some behaviour for our module
+						    function foo(){
+						        lib.log('hello world!');
+						    }
+						     
+						    // export (expose) foo to other modules
+						    exports.foo = foo;
+						</code></pre>
+					</section>
+					<section>
+						<h3>Consuming Multiple Dependencies</h3>
+						<pre><code>
+							    var modA = require('./foo');
+							    var modB = require('./bar');
+							     
+							    exports.app = function(){
+							        console.log('Im an application!');
+							    }
+							     
+							    exports.foo = function(){
+							        return modA.helloWorld();
+							    }
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
 					<h1>QUESTIONS?</h1>
 				</section>
 
