@@ -1,1 +1,1 @@
-# Presentations - http://mikach.github.io/presentations/
+http://mikach.github.io/presentations/
