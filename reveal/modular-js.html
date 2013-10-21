@@ -394,8 +394,40 @@
 				<section>
 					<section>
 						<h2>ES6 Harmony</h2>
+						<pre><code>
+							/*jshint esnext:true */
+							module App {
+							  export class Hello {
+							    constructor() {
+							      console.log('Hello');
+							    }
+							  }
+							}
+
+							import { Hello } from App;
+
+							new Hello();
+						</code></pre>
 					</section>
-					
+					<section>
+						<h3>Using ES6 today</h2>
+						<ul>
+							<li class="fragment"  data-fragment-index="1">
+								In node
+								<pre><code>
+									$ node --harmony script.js
+								</code></pre>
+							</li>
+							<li class="fragment"  data-fragment-index="2">
+								In browser
+								<a href="https://github.com/google/traceur-compiler">Google Traceur Compiler</a>
+								<pre><code>
+									$ npm install -g traceur
+									$ traceur --out compiled.js main.js
+								</code></pre>
+							</li>
+						</ul>
+					</section>
 				</section>
 
 				<section>
