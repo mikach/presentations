@@ -338,14 +338,64 @@
 							</code></pre>
 						</li>
 					</section>
+					<section>
+						<h2>component</h2>
+					</section>
 				</section>
 
 				<section>
-					<h2>How to support both formats in your library</h2>
+					<section>
+						<h2>How to support both formats in your library</h2>
+					</section>
+					<section>
+						<h2>Way 1</h2>
+						<p>from async library <a href="https://github.com/caolan/async">https://github.com/caolan/async</a></p>
+						<pre><code>
+							(function () {
+							    var async = {};
+							    // code of library
+
+                  // AMD / RequireJS
+							    if (typeof define !== 'undefined' &amp;&amp; define.amd) {
+							        define([], function () { return async; });
+							    }
+							    // Node.js
+							    else if (typeof module !== 'undefined' &amp;&amp; module.exports) {
+							        module.exports = async;
+							    }
+							    // included directly via &lt;script&gt; tag
+							    else { root.async = async; }
+							}());
+						</code></pre>
+					</section>
+					<section>
+						<h2>Way 2</h2>
+						<p>from q library <a href="https://github.com/kriskowal/q">https://github.com/kriskowal/q</a></p>
+						<pre><code>
+							(function (definition) {
+							    // CommonJS
+							    if (typeof exports === "object") {
+							        module.exports = definition();
+							    // RequireJS
+							    } else if (typeof define === "function" &amp;&amp; define.amd) {
+							        define(definition);
+							    // &lt;script&gt;
+							    } else {
+							        Q = definition();
+							    }
+							})(function () {
+							    "use strict";
+							    // code
+							});
+						</code></pre>
+					</section>
 				</section>
 
 				<section>
-					<h2>ES6 Harmony</h2>
+					<section>
+						<h2>ES6 Harmony</h2>
+					</section>
+					
 				</section>
 
 				<section>
