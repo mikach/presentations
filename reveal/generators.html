@@ -166,8 +166,8 @@ Now, let it run:
 </section>
 <section>
 <pre><code>
-    function async(genFn) {
-        var gen = genFn();
+    function async(generatorFn) {
+        var generator = generatorFn();
 
         function handle(result){
           if (result.done) return result.value
@@ -179,7 +179,7 @@ Now, let it run:
           })
         }
 
-        return handle(gen.next());
+        return handle(generator.next());
     };
 </code></pre>
 </section>
