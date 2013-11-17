@@ -4,9 +4,9 @@
     <head>
         <meta charset="utf-8">
 
-        <title>Modular javascript architecture</title>
+        <title>generators</title>
 
-        <meta name="description" content="Modular javascript architecture">
+        <meta name="description" content="Generators">
         <meta name="author" content="Michael Kachanovskyi">
 
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -42,9 +42,173 @@
 
             <!-- Any section element inside of this container is displayed as a slide -->
             <div class="slides">
-                
+<section>
+    <h1>Generators</h1>    
+</section>
+<section>
+<h3>Generator basics</h3>
+<pre><code>
+    function* two(){
+        yield 1;
+        yield 2;
+    }
+</code></pre>
+Now, let it run:
+<pre><code>
+    var seq = two()
+    seq.next()
+    // { value: 1, done: false }
+    seq.next()
+    // { value: 2, done: false }
+    seq.next()
+    // { value: undefined, done: true }
+</code></pre>
+</section>
+<section>
+<h3>Infinite sequence</h3>
+<pre><code>
+    function fibonacci(){
+      var fn1 = 1;
+      var fn2 = 1;
+      while (1){
+        var current = fn2;
+        fn2 = fn1;
+        fn1 = fn1 + current;
+        yield current;
+      }
+    }
+    var sequence = fibonacci();
+    print(sequence.next()); // 1
+    print(sequence.next()); // 1
+    print(sequence.next()); // 2
+    print(sequence.next()); // 3
+    print(sequence.next()); // 5
+</code></pre>
+</section>
+<section>
+<h3>Reading JSON</h3>
+<pre><code>
+    function readJSONSync(filename){
+      return JSON.parse(fs.readFileSync(filename, 'utf8'))
+    }
+</code></pre>
+</section>
+<section>
+<h3>Reading JSON Async</h3>
+<pre><code>
+    function readJSON(filename, callback){
+      fs.readFile(filename, 'utf8', function (err, res){
+        if (err) return callback(err)
+        callback(null, JSON.parse(res))
+      })
+    }
+</code></pre>
+</section>
+<section>
+<h3>Reading JSON Async 2</h3>
+<pre><code>
+    function readJSON(filename, callback){
+      fs.readFile(filename, 'utf8', function (err, res){
+        if (err) return callback(err)
+        try {
+          res = JSON.parse(res)
+        } catch (ex) {
+          return callback(ex)
+        }
+        callback(null, res)
+      })
+    }
+</code></pre>
+</section>
+<section>
+<h3>Reading JSON with Promises</h3>
+<pre><code>
+    function readJSON(filename){
+      return readFile(filename, 'utf8').then(JSON.parse)
+    }
+</code></pre>
+</section>
+<section>
+<h3>Promises sequence</h3>
+<pre><code>
+    db.connect().then(function() {
+        return db.getFileNameById(id);
+    }).then(function(name) {
+        return readFile(name);
+    }).then(function(content) {
+        return content.split(' ');
+    }).then(function(words) {
+        // ...
+    });
+</code></pre>
+</section>
+<section>
+<h3>Async code with generators</h3>
+<pre><code>
+    async(function* () {
+        yield db.connect();
+        var name = yield db.getFilenameById(id);
+        var content = yield readFile(name);
+        var words = content.split(' ');
+        // ...
+    });
+</code></pre>
+</section>
+<section>
+<pre><code>
+    async(function* () {
+        var res1 = $.ajax({ url: url1 });
+        var res2 = $.ajax({ url: url2 });
+        var res3 = $.ajax({ url: url3 });
+        // Do something with results
+    });
+</code></pre>
+</section>
+<section>
+<pre><code>
+    function async(genFn) {
+        var gen = genFn();
 
+        function handle(result){
+          if (result.done) return result.value
+          
+          return result.value.then(function (res){
+            return handle(generator.next(res))
+          }, function (err){
+            return handle(generator.throw(err))
+          })
+        }
 
+        return handle(gen.next());
+    };
+</code></pre>
+</section>
+<section>
+<h3>Suspend</h3>
+<pre><code>
+    suspend(function* (resume) {
+        var data = yield fs.readFile(__filename, 'utf8', resume);
+        console.log(data);
+    })();
+</code></pre>
+</section>
+<section>
+<h3>Q library</h3>
+<pre><code>
+    Q.async(function*() {
+        yield db.hmset('blog::post', {
+            date: '20130605'
+        });
+        var post = yield db.hgetall('blog::post');
+        var tags = post.tags.split(',');
+        var taggedPosts = yield Q.all(tags.map(function(tag) {
+            return db.hgetall('blog::tag::' + tag);
+        }));
+        // do something with post and taggedPosts
+        client.quit();
+    })().done();
+</code></pre>
+</section>
             </div>
 
         </div>
