@@ -400,7 +400,52 @@
 <!-- LIBS -->
 <section>
     <h3>suspend</h3>
-    
+<pre><code class="javascript">
+    var suspend = require('suspend');
+
+    suspend(function* (resume) {
+        var data = yield fs.readFile(__filename, 'utf8', resume);
+        console.log(data);
+    })();
+
+</code></pre>
+</section>
+<section>
+    <h3>CO</h3>
+<pre><code class="javascript">
+    var co = require('co');
+
+    co(function *(){
+        var a = yield get('http://google.com');
+        var b = yield get('http://yahoo.com');
+        var c = yield get('http://cloudup.com');
+        console.log(a.status);
+        console.log(b.status);
+        console.log(c.status);
+    })();
+
+</code></pre>
+</section>
+<section>
+    <h3>Q.async</h3>
+<pre><code class="javascript">
+    var generator = Q.async(function* () {
+        var ten = yield 10;
+        console.log(ten, 10);
+        var twenty = yield ten + 10;
+        console.log(twenty, 20);
+        var thirty = yield twenty + 10;
+        console.log(thirty, 30);
+        return thirty + 10;
+    });
+
+    generator().then(function (forty) {
+        console.log(forty, 40);
+    }, function (reason) {
+        console.log("reason", reason);
+    });
+
+</code></pre>
 </section>
 <!-- END LIBS -->
 
