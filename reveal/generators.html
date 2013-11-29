@@ -245,7 +245,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Промис</p>
+    <p>Promise</p>
 <pre><code class="javascript">
     var Q = require('q');
 
@@ -260,7 +260,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Асинхронный вариант с промисом</p>
+    <p>Асинхронный вариант с promise</p>
 <pre><code class="javascript">
     function readJSON(filename){
         return readFile(filename).then(function (res){
@@ -269,8 +269,7 @@
     }
 
 </code></pre>
-<p>или</p>
-<pre><code class="javascript">
+<pre class="fragment" data-fragment-index="1"><code class="javascript">
     function readJSON(filename){
         return readFile(filename).then(JSON.parse});
     }
@@ -283,7 +282,7 @@
 <!-- PROMISES -->
 <section>
 <section>
-    <p>Что не так с промисами?</p>
+    <p>Что не так с promise?</p>
 <pre><code class="javascript">
     readJSON(file1).then(function(content1) {
         // do something
@@ -321,7 +320,7 @@
 <section>
 <section>
     <h2>Генераторы</h2>
-    <p>Почему бы не использовать их для того, чтобы подождать промис?</p>
+    <p>Почему бы не использовать их для того, чтобы подождать promise?</p>
 </section>
 <section>
 <p>Чтение JSON синхронно</p>
@@ -331,8 +330,8 @@
     }
 
 </code></pre>
-<p>Чтение JSON асинхронно</p>
-<pre><code class="javascript">
+<p class="fragment" data-fragment-index="1">Чтение JSON асинхронно</p>
+<pre class="fragment" data-fragment-index="1"><code class="javascript">
     var readJSON = Y(function* (filename) {
         return JSON.parse(yield readFile(filename, 'utf8'));
     });
@@ -375,16 +374,33 @@
 
 </code></pre>
 </section>
+</section>
+<section>
 <section>
     <p>Как это работает?</p>
+<pre><code class="javascript">
+    function* read() {
+        var content = yield readFile('basic.js');
+        console.log(content.length);
+    }
+
+    var gen = read();
+
+    var promise = gen.next().value;
+
+    promise.then(gen.next.bind(gen), gen.throw.bind(gen));
+
+</code></pre>
+</section>
+<section>
 <pre><code class="javascript">
     function Y(fn) {
         var generator = fn();
 
-        function handle(result){
+        function handle(result) {
             return result.done ? result.value : result.value.then(function (res){
                 return handle(generator.next(res))
-            }, function (err){
+            }, function (err) {
                 return handle(generator.throw(err))
             });
         }
@@ -404,24 +420,31 @@
     var suspend = require('suspend');
 
     suspend(function* (resume) {
-        var data = yield fs.readFile(__filename, 'utf8', resume);
-        console.log(data);
-    })();
+        return JSON.parse(yield fs.readFile(__filename, 'utf8', resume));
+    });
 
 </code></pre>
 </section>
 <section>
     <h3>CO</h3>
 <pre><code class="javascript">
+    function read(file) {
+      return function(fn){
+        fs.readFile(file, 'utf8', fn);
+      }
+    }
+
+</code></pre>
+<pre><code class="javascript">
     var co = require('co');
 
     co(function *(){
-        var a = yield get('http://google.com');
-        var b = yield get('http://yahoo.com');
-        var c = yield get('http://cloudup.com');
-        console.log(a.status);
-        console.log(b.status);
-        console.log(c.status);
+        var a = yield read('.gitignore');
+        var b = yield read('Makefile');
+        var c = yield read('package.json');
+        console.log(a.length);
+        console.log(b.length);
+        console.log(c.length);
     })();
 
 </code></pre>
@@ -491,8 +514,8 @@
     })();
 
 </code></pre>    
-<p>Параллельное выполнение</p>
-<pre><code class="javascript">
+<p class="fragment" data-fragment-index="1">Параллельное выполнение</p>
+<pre class="fragment" data-fragment-index="1"><code class="javascript">
     var get = Y.nwrap( require('request').get );
 
     Y(function* () {
@@ -510,16 +533,16 @@
 
 <!-- PERFORMANCE -->
 <section>
-    <h2>Производительность</h2>
-    <p>Чтение текстового файла 50000 раз</p>
+    <p>Производительность</p>
 <pre><code class="javascript">
-    var d = +new Date();
     co(function *(){
-      for (var i = 1; i < 50000; i++) {
-        var a = yield read('benchmark/1.txt', 'utf8');
-      }
-      console.log('Reading 50000 times: ' + (+new Date() - d) + 'ms');
-    })()
+        var d = +new Date();
+        for (var i = 1; i < 50000; i++) {
+            var a = yield read('benchmark/1.txt', 'utf8');
+        }
+        console.log('Reading 50000 times: ' + (+new Date() - d) + 'ms');
+    })();
+    
 </code></pre>
     <ul>
         <li>CO: ~4.6s</li>
@@ -541,8 +564,8 @@
         });
     });
 </code></pre>
-    <p>Промисы</p>
-<pre><code class="javascript">
+    <p class="fragment" data-fragment-index="1">Promise</p>
+<pre class="fragment" data-fragment-index="1"><code class="javascript">
     func().then(function(res) {
         // ...
     }).then(function(res) {
@@ -550,8 +573,8 @@
     }).then(...);
 
 </code></pre>
-    <p>Генераторы + промисы</p>
-<pre><code class="javascript">
+    <p class="fragment" data-fragment-index="2">Генераторы + promise</p>
+<pre class="fragment" data-fragment-index="2"><code class="javascript">
     async(function* () {
         var res = yield func();
         // ...
