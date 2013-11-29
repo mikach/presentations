@@ -556,6 +556,40 @@
 <!-- END PERFORMANCE -->
 
 <section>
+    <h3>Express</h3>
+<pre><code class="javascript">
+    app.post('/users', Q.async(function* (req, res) {
+        var user = new User(req.params);
+
+        if (yield user.save()) {
+            res.send( JSON.stringify(user) );
+        } else {
+            res.send(422);
+        }
+    }));
+
+</code></pre>
+</section>
+<section>
+    <h3>Mocha</h3>
+<pre><code>
+    $ mocha --harmony test.js
+
+</code></pre>
+<pre><code class="javascript">
+    describe('Some stuff', function() {
+        // ...
+
+        it('should do async operation', Y(function* (done) {
+            var a = yield b();
+            done();
+        }));
+    });
+
+</code></pre>
+</section>
+
+<section>
     <p>Асинхронный код</p>
 <pre><code class="javascript">
     function(args, function(err, res) {
