@@ -236,6 +236,22 @@
         fs.readFile(filename, 'utf8', function (err, res){
             if (err) return callback(err)
             try {
+                callback(null, JSON.parse(res))
+            } catch(ex) {
+                callback(ex);
+            }
+        })
+    }
+
+</code></pre>
+</section>
+<section>
+    <p>Асинхронный вариант 3</p>
+<pre><code class="javascript">
+    function readJSON(filename, callback) {
+        fs.readFile(filename, 'utf8', function (err, res){
+            if (err) return callback(err)
+            try {
                 res = JSON.parse(res)
             } catch (ex) {
                 return callback(ex)
@@ -528,6 +544,29 @@
         console.log(content.map(function(c) { return c.body.length; }));
     })();
 
+</code></pre>
+</section>
+<section>
+<p>SUSPEND-style</p>
+<pre><code class="javascript">
+    Y(function *async() {
+        var result = yield void setTimeout(function () {
+            async.resume(null, 123);
+        }, 200);
+        expect(result).to.be.equal(123);
+        done();
+    })();
+
+</code></pre>
+<pre><code class="javascript">
+    Y(function *async() {
+        var content = yield fs.readFile('test/example.txt', 'utf8', async.resume);
+    })();
+
+</code></pre>
+<pre><code class="javascript">
+    var resume = arguments.callee.resume;
+    
 </code></pre>
 </section>
 </section>
