@@ -371,7 +371,7 @@
         });
 
         db.disconnect();
-    });
+    })();
 
 </code></pre>
 </section>
@@ -388,7 +388,7 @@
             console.log("Error: " + e.message);
         }
 
-    });
+    })();
 
 </code></pre>
 </section>
@@ -413,17 +413,19 @@
 <section>
 <pre><code class="javascript">
     function Y(fn) {
-        var generator = fn();
+        return function() {
+            var generator = fn.apply(this, arguments);
 
-        function handle(result) {
-            return result.done ? result.value : result.value.then(function (res){
-                return handle(generator.next(res))
-            }, function (err) {
-                return handle(generator.throw(err))
-            });
+            function handle(result) {
+                return result.done ? result.value : result.value.then(function (res){
+                    return handle(generator.next(res))
+                }, function (err) {
+                    return handle(generator.throw(err))
+                });
+            }
+
+            return hande(generator.next());
         }
-
-        return hande(generator.next());
     }
 
 </code></pre>
