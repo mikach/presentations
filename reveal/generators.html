@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8">
 
-        <title>Генераторы в Node.js</title>
+        <title>Javascript Generators</title>
 
         <meta name="description" content="Generators">
         <meta name="author" content="Michael Kachanovskyi">
@@ -51,21 +51,33 @@
 
 
 <section>
-    <p style="font-size:76px;">Генераторы в Node.js</p>
-    <br />
-    <p>Михаил Качановский, GlobalLogic</p>
+    <p style="font-size:76px;">Javascript Generators</p>
     <br>
-    <a href="http://bit.do/nodegenerators">http://bit.do/nodegenerators</a>
+    Slides - <a href="http://bit.do/nodegenerators">http://bit.do/nodegenerators</a>
 </section>
 
 <section>
+<section>
+    <p>In browser</p>
+    <br>
+    ECMAScript 6 compatibility table<br>
+    <a href="http://kangax.github.io/compat-table/es6/">http://kangax.github.io/compat-table/es6/</a><br>
+    <br>
+    Firefox - from v28 <br>
+    <br>
+    Chrome - from v30 <br>(have to be enabled via "Experimental Javascript features" flag)
+</section>
+
+<section>
+<p>In nodejs (unstable)</p>
+<br>
 <pre><code>
-    $ nvm install v0.11.2
+    $ nvm install v0.11.13
 
 </code></pre>
 <br />
 <pre><code>
-    $ node -v 0.11.2-9
+    $ node -v 0.11.13
 
 </code></pre>
 <br />
@@ -74,11 +86,12 @@
 
 </code></pre>
 </section>
+</section>
 
 <!-- BASICS -->
 <section>
 <section>
-    <h2>Основы</h2>
+    <h2>Basics</h2>
 <pre><code class="javascript">
     function* two() {
         yield 1;
@@ -96,7 +109,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Итератор</p>
+    <p>Iterator</p>
 <pre><code class="javascript">
     function* odd(limit) {
         for (var i = 0; i < limit; i++) {
@@ -114,7 +127,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Бесконечные последовательности</p>
+    <p>Infinite sequences</p>
 <pre><code class="javascript">
     function fibonacci(){
         var fn1 = 1;
@@ -139,7 +152,6 @@
 </code></pre>
 </section>
 <section>
-    <p>Передача параметров</p>
 <pre><code class="javascript">
     function* fibonacci(){
         var fn1 = 1;
@@ -170,7 +182,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Рекурсия</p>
+    <p>Recursion</p>
 <pre><code class="javascript">
     function* factorial(n) {
         return n === 0 ? 1 : n*(yield* factorial(n-1));
@@ -209,7 +221,7 @@
 <!-- READ JSON -->
 <section>
 <section>
-    <p>Чтение JSON</p>
+    <p>Read JSON</p>
 <pre><code class="javascript">
     function readJSONSync(filename) {
         return JSON.parse(fs.readFileSync(filename, 'utf8'))
@@ -218,7 +230,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Асинхронный вариант</p>
+    <p>Async</p>
 <pre><code class="javascript">
     function readJSON(filename, callback) {
         fs.readFile(filename, 'utf8', function (err, res){
@@ -230,7 +242,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Асинхронный вариант 2</p>
+    <p>Async 2</p>
 <pre><code class="javascript">
     function readJSON(filename, callback) {
         fs.readFile(filename, 'utf8', function (err, res){
@@ -246,7 +258,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Асинхронный вариант 3</p>
+    <p>Async 3</p>
 <pre><code class="javascript">
     function readJSON(filename, callback) {
         fs.readFile(filename, 'utf8', function (err, res){
@@ -265,23 +277,23 @@
 <section>
     <p>Promise</p>
 <pre><code class="javascript">
-    var Q = require('q');
+    var Promise = Promise || require('es6-promise').Promise;
 
     function readFile(filename) {
-        var deffered = Q.defer();
-        fs.readFile(filename, function(err, res) {
-            err ? deffered.reject(err) : deffered.resolve(res);
+        return new Promise(function(resolve, reject) {
+            fs.readFile(filename, function(err, res) {
+                err ? reject(err) : resolve(res);
+            });
         });
-        return deffered.promise;
     }
 
 </code></pre>
 </section>
 <section>
-    <p>Асинхронный вариант с promise</p>
+    <p>Async with promise</p>
 <pre><code class="javascript">
-    function readJSON(filename){
-        return readFile(filename).then(function (res){
+    function readJSON(filename) {
+        return readFile(filename).then(function (res) {
             return JSON.parse(res)
         });
     }
@@ -300,7 +312,7 @@
 <!-- PROMISES -->
 <section>
 <section>
-    <p>Что не так с promise?</p>
+    <p>So what's wrong with Promises?</p>
 <pre><code class="javascript">
     readJSON(file1).then(function(content1) {
         // do something
@@ -316,7 +328,7 @@
 </code></pre>
 </section>
 <section>
-    <p>Последовательность операций</p>
+    <p>Sequence of operations</p>
 <pre><code class="javascript">
     db.connect(options).then(function() {
         return db.getPostById(postId);
@@ -337,29 +349,28 @@
 <!-- GENERATORS -->
 <section>
 <section>
-    <h2>Генераторы</h2>
-    <p>Почему бы не использовать их для того, чтобы подождать promise?</p>
+    <h2>Generators and promises together</h2>
 </section>
 <section>
-<p>Чтение JSON синхронно</p>
+<p>Read JSON sync</p>
 <pre><code class="javascript">
     function readJSONSync(filename) {
         return JSON.parse(fs.readFileSync(filename, 'utf8'))
     }
 
 </code></pre>
-<p class="fragment" data-fragment-index="1">Чтение JSON асинхронно</p>
+<p class="fragment" data-fragment-index="1">Read JSON async</p>
 <pre class="fragment" data-fragment-index="1"><code class="javascript">
-    var readJSON = Y(function* (filename) {
+    var readJSON = handle(function* (filename) {
         return JSON.parse(yield readFile(filename, 'utf8'));
     });
 
 </code></pre>
 </section>
 <section>
-    <p>Последовательность операций</p>
+    <p>Sequence of operations</p>
 <pre><code class="javascript">
-    Y(function* () {
+    handle(function* () {
         yield db.connect(options);
 
         var post = yield db.getPostById(postId);
@@ -376,9 +387,9 @@
 </code></pre>
 </section>
 <section>
-    <p>Обработка ошибок</p>
+    <p>Error handling</p>
 <pre><code class="javascript">
-    Y(function* () {
+    handle(function* () {
 
         try {
             var content1 = yield read(file1);
@@ -395,7 +406,7 @@
 </section>
 <section>
 <section>
-    <p>Как это работает?</p>
+    <p>How it works?</p>
 <pre><code class="javascript">
     function* read() {
         var content = yield readFile('basic.js');
@@ -412,19 +423,19 @@
 </section>
 <section>
 <pre><code class="javascript">
-    function Y(fn) {
+    function handle(fn) {
         return function() {
             var generator = fn.apply(this, arguments);
 
-            function handle(result) {
+            function next(result) {
                 return result.done ? result.value : result.value.then(function (res){
-                    return handle(generator.next(res))
+                    return next(generator.next(res))
                 }, function (err) {
-                    return handle(generator.throw(err))
+                    return next(generator.throw(err))
                 });
             }
 
-            return hande(generator.next());
+            return next(generator.next());
         }
     }
 
@@ -435,7 +446,7 @@
 
 <!-- LIBS -->
 <section>
-    <h3>suspend</h3>
+    <h3>Suspend</h3>
 <pre><code class="javascript">
     var suspend = require('suspend');
 
@@ -490,112 +501,9 @@
 
 </code></pre>
 </section>
-<section>
-<section>
-    <h3>Yielding</h3>
-<pre><code class="javascript">
-    var Y = require('yielding');
-
-    var c = Y(function* () {
-        var a = yield 1;
-        var b = yield 2;
-        return a + b;
-    });
-
-    console.log( c.once() ); // 1
-    console.log( c() ); // 3
-
-</code></pre>
-</section>
-<section>
-    <p>toArray()</p>
-<pre><code class="javascript">
-    var odd = Y(function* (limit) {
-        for (var i = 0; i < limit; i++) {
-            if (i % 2) yield i;
-        }
-    });
-
-    console.log( odd.toArray(10) ); // 1,3,5,7,9
-    
-</code></pre>
-</section>
-<section>
-    <p>Последовательное выполнение</p>
-<pre><code class="javascript">
-    var get = Y.nwrap( require('request').get );
-
-    Y(function* () {
-        var pages = ['http://google.com', 'http://yahoo.com', 'http://bing.com'];
-        var content = pages.map(function(url) {
-            return yield get(url);
-        });
-        console.log(content.map(function(c) { return c.body.length; }));
-    })();
-
-</code></pre>    
-<p class="fragment" data-fragment-index="1">Параллельное выполнение</p>
-<pre class="fragment" data-fragment-index="1"><code class="javascript">
-    var get = Y.nwrap( require('request').get );
-
-    Y(function* () {
-        var pages = ['http://google.com', 'http://yahoo.com', 'http://bing.com'];
-        var content = yield pages.map(function(url) {
-            return get(url);
-        });
-        console.log(content.map(function(c) { return c.body.length; }));
-    })();
-
-</code></pre>
-</section>
-<section>
-<p>SUSPEND-style</p>
-<pre><code class="javascript">
-    Y(function *async() {
-        var result = yield void setTimeout(function () {
-            async.resume(null, 123);
-        }, 200);
-        expect(result).to.be.equal(123);
-        done();
-    })();
-
-</code></pre>
-<pre><code class="javascript">
-    Y(function *async() {
-        var content = yield fs.readFile('test/example.txt', 'utf8', async.resume);
-    })();
-
-</code></pre>
-<pre><code class="javascript">
-    var resume = arguments.callee.resume;
-    
-</code></pre>
-</section>
-</section>
 <!-- END LIBS -->
 
-<!-- PERFORMANCE -->
 <section>
-    <p>Производительность</p>
-<pre><code class="javascript">
-    co(function *(){
-        var d = +new Date();
-        for (var i = 1; i < 50000; i++) {
-            var a = yield read('benchmark/1.txt', 'utf8');
-        }
-        console.log('Reading 50000 times: ' + (+new Date() - d) + 'ms');
-    })();
-
-</code></pre>
-    <ul>
-        <li>CO: ~4.6s</li>
-        <li>yielding: ~4.75s</li>
-        <li>suspend: ~4.8s</li>
-        <li>Q.async: ~6.9s</li>
-    </ul>
-</section>
-<!-- END PERFORMANCE -->
-
 <section>
     <h3>Express</h3>
 <pre><code class="javascript">
@@ -611,6 +519,27 @@
 
 </code></pre>
 </section>
+
+<section>
+    <h3>Koa</h3>
+    <p>Next generation web framework for node.js</p>
+<pre><code>
+    var koa = require('koa');
+    var app = koa();
+
+    // x-response-time
+
+    app.use(function *(next){
+      var start = new Date;
+      yield next;
+      var ms = new Date - start;
+      this.set('X-Response-Time', ms + 'ms');
+    });
+
+</code></pre>
+</section>
+</section>
+
 <section>
     <h3>Mocha</h3>
 <pre><code>
@@ -621,7 +550,7 @@
     describe('Some stuff', function() {
         // ...
 
-        it('should do async operation', Y(function* (done) {
+        it('should do async operation', Q.async(function* (done) {
             var a = yield b();
             done();
         }));
@@ -631,7 +560,7 @@
 </section>
 
 <section>
-    <p>Асинхронный код</p>
+    <p>Async</p>
 <pre><code class="javascript">
     function(args, function(err, res) {
         function(args2, function(err, res) {
@@ -641,7 +570,7 @@
         });
     });
 </code></pre>
-    <p class="fragment" data-fragment-index="1">Promise</p>
+    <p class="fragment" data-fragment-index="1">Promises</p>
 <pre class="fragment" data-fragment-index="1"><code class="javascript">
     func().then(function(res) {
         // ...
@@ -650,7 +579,7 @@
     }).then(...);
 
 </code></pre>
-    <p class="fragment" data-fragment-index="2">Генераторы + promise</p>
+    <p class="fragment" data-fragment-index="2">Generators + Promises</p>
 <pre class="fragment" data-fragment-index="2"><code class="javascript">
     async(function* () {
         var res = yield func();
@@ -661,13 +590,28 @@
 </section>
 
 <section>
-    <h2>Спасибо за внимание!</h2>
-    <a href="https://twitter.com/mikach27">https://twitter.com/mikach27</a>
-    <br />
-    <a href="https://github.com/mikach">https://github.com/mikach</a>
-    <br />
-    <a href="https://github.com/mikach/yielding">https://github.com/mikach/yielding</a>
-    <p>Слайды: <a href="http://mikach.github.io/presentations/reveal/generators.html">http://bit.do/nodegenerators</a></p>
+    <h2>We can do it better!</h2>
+    <br>
+    <p class="fragment" data-fragment-index="1">With async await in JavaScript</p>
+<pre class="fragment" data-fragment-index="2"><code>
+    var fn = handle(function* () {
+        var content = yield readFile(filename);
+        // ...
+    });
+
+</code></pre>
+<pre class="fragment" data-fragment-index="3"><code>
+    async function fn() {
+        var content = await readFile(filename);
+        // ...
+    }
+
+</code></pre>
+</section>
+
+<section>
+    <h2>Thank you!</h2>
+    <p>Slides: <a href="http://mikach.github.io/presentations/reveal/generators.html">http://bit.do/nodegenerators</a></p>
 </section>
 
 
